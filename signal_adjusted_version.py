@@ -26,6 +26,7 @@ class Viewer(QMainWindow):
         self._data_model = None
 
         self._button.clicked.connect(self._on_button_clicked)
+        self._button.clicked.connect(self.send_moved_data)
 
         self.mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False)
         self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
@@ -34,6 +35,7 @@ class Viewer(QMainWindow):
         self.points_data = None
         self.cache = None
         self.updated_data = None
+        self.flag_point = False
 
     def set_data_model(self, dm: DataModel):
         self._data_model = dm
@@ -67,25 +69,17 @@ class Viewer(QMainWindow):
         self._data_model.acquiring_data(self.crdn)
 
     def send_moved_data(self):
-        self.points_data = self.mouseline.getState()  # here, we get an array, which has multiple elements,
-        p1 = self.points_data['pos'][0] + self.x1     # but only pos is needed
-        p2 = self.points_data['pos'][1] + self.y1
-        p3 = self.points_data['pos'][0] + self.x2
-        p4 = self.points_data['pos'][1] + self.y2
+        if not self.flag_point:
+            self.points_data = self.mouseline.getState()  # here, we get an array, which has multiple elements,
+            p1 = self.points_data['pos'][0] + self.x1     # but only pos is needed
+            p2 = self.points_data['pos'][1] + self.y1
+            p3 = self.points_data['pos'][0] + self.x2
+            p4 = self.points_data['pos'][1] + self.y2
 
-        self.updated_data = [p1, p2, p3, p4]
-
-        if self.updated_data != self.cache:
-            self.cache = self.updated_data
+            self.updated_data = [p1, p2, p3, p4]
+            self.flag_point = True
             self._data_model.moved_data_acquiring(self.updated_data)
-
-        # self.sending = self.points_data
-        # self._plot_wdg.getPlotItem().clear()
-        # current_pos = self.mouseline.getState()
-        # print(current pos)
-
-        # self.mouseline.setState(current_pos)
-        # self._data_model.moved_data_acquiring(self.sending)
+            self.flag_point = False
 
 
 if __name__ == '__main__':
