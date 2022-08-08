@@ -27,6 +27,8 @@ class Viewer(QMainWindow):
 
         self._button.clicked.connect(self._on_button_clicked)
         self._button.clicked.connect(self.send_moved_data)
+        self._plot_wdg.disableAutoRange()
+        self._plot_wdg.setRange(xRange=[-10, 10], yRange=[-10, 10])
 
         self.mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False)
         self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
@@ -58,8 +60,8 @@ class Viewer(QMainWindow):
         self.xdata = self.crdn[4]
 
         self._plot_wdg.getPlotItem().clear()
-        self.mouseline = pg.LineSegmentROI([[self.x1, self.y1], [self.x2, self.y2]], movable=True, rotatable=False)
 
+        self.mouseline = pg.LineSegmentROI([[self.x1, self.y1], [self.x2, self.y2]], movable=True, rotatable=False)
         self._plot_wdg.addItem(self.mouseline)
         self._plot_wdg.getPlotItem().plot().setData(x=self.xdata, y=np.sin(self.xdata) * 2)
 
