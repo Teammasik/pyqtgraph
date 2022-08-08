@@ -31,17 +31,20 @@ class Viewer(QMainWindow):
         self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
 
         self.sending = None
+        self.points_data = None
+        self.cache = None
+        self.updated_data = None
 
     def set_data_model(self, dm: DataModel):
         self._data_model = dm
 
         self._data_model.coordinate_changed.connect(self._on_model_points_changed)
+        self._data_model.coordinate_moved.connect(self.send_moved_data)  # new line
 
         self._data_model.generate_new_coordinates()
 
     def _on_button_clicked(self):
         self._data_model.generate_new_coordinates()
-        self.send_data()
 
     def _on_model_points_changed(self):
 
@@ -54,6 +57,7 @@ class Viewer(QMainWindow):
 
         self._plot_wdg.getPlotItem().clear()
         self.mouseline = pg.LineSegmentROI([[self.x1, self.y1], [self.x2, self.y2]], movable=True, rotatable=False)
+
         self._plot_wdg.addItem(self.mouseline)
         self._plot_wdg.getPlotItem().plot().setData(x=self.xdata, y=np.sin(self.xdata) * 2)
 
@@ -61,16 +65,27 @@ class Viewer(QMainWindow):
 
     def send_data(self):
         self._data_model.acquiring_data(self.crdn)
-        # self.sending = self.mouseline.getLocalHandlePositions()
-
-        # self.sending = self.mouseline.getSceneHandlePositions()
-        # self.sending = self.mouseline.getGlobalTransform()
-        # self.sending.append(self.mouseline.getGlobalTransform())
 
     def send_moved_data(self):
-        self.sending = self.mouseline.getState()
-        # self.sending = self.mouseline.getSceneHandlePositions()
-        self._data_model.moved_data_acquiring(self.sending)
+        self.points_data = self.mouseline.getState()  # here, we get an array, which has multiple elements,
+        p1 = self.points_data['pos'][0] + self.x1     # but only pos is needed
+        p2 = self.points_data['pos'][1] + self.y1
+        p3 = self.points_data['pos'][0] + self.x2
+        p4 = self.points_data['pos'][1] + self.y2
+
+        self.updated_data = [p1, p2, p3, p4]
+
+        if self.updated_data != self.cache:
+            self.cache = self.updated_data
+            self._data_model.moved_data_acquiring(self.updated_data)
+
+        # self.sending = self.points_data
+        # self._plot_wdg.getPlotItem().clear()
+        # current_pos = self.mouseline.getState()
+        # print(current pos)
+
+        # self.mouseline.setState(current_pos)
+        # self._data_model.moved_data_acquiring(self.sending)
 
 
 if __name__ == '__main__':
