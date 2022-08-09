@@ -4,3 +4,5 @@ data_file.py
 signals_attempt.py
 .idea
 __pycache__
+testing.py
+my_own_class.py
