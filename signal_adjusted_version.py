@@ -60,14 +60,12 @@ class Viewer(QMainWindow):
         self.y2 = self.crdn[3]
         self.xdata = self.crdn[4]
         state = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0, 'points': [Point(self.x1, self.y1), Point(self.x2, self.y2)]}
+        self.mouseline.sigRegionChangeFinished.disconnect(self.send_moved_data)
         self.mouseline.setState(state)
+        self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
         # self._plot_wdg.removeItem(self.mouseline)
         # self._plot_wdg.getPlotItem().clear()     let it be there
-        # self.mouseline = pg.LineSegmentROI([[self.x1, self.y1], [self.x2, self.y2]], movable=True, rotatable=False)
-        # self._plot_wdg.addItem(self.mouseline)
         self._plot_wdg.getPlotItem().plot().setData(x=self.xdata, y=np.sin(self.xdata) * 2)
-
-        #self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
 
     # def send_data(self):
     #     self._data_model.acquiring_data(self.crdn)
