@@ -37,16 +37,20 @@ class Viewer(QMainWindow):
         self._plot_wdg.addItem(self.second_mouseline)
         self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
 
+        # self.mouseline.sigRegionChangeFinished.connect(self.catch_up_movement)
+
         self.sending = None
         self.points_data = None
         self.updated_data = None
         self.flag_point = False
+        self.state_for_second = None
 
     def set_data_model(self, dm: DataModel):
         self._data_model = dm
 
         self._data_model.coordinate_changed.connect(self._on_model_points_changed)
         self._data_model.coordinate_moved.connect(self.send_moved_data)  # new line
+        self._data_model.coordinate_moved.connect(self.catch_up_movement)  # newer line
 
         self._data_model.generate_new_coordinates()
 
@@ -62,11 +66,11 @@ class Viewer(QMainWindow):
         self.y2 = self.crdn[3]
         self.xdata = self.crdn[4]
         state = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0, 'points': [Point(self.x1, self.y1), Point(self.x2, self.y2)]}
-        state_for_second = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0, 'points': [Point(self.x1+3, self.y1+3), Point(self.x2+3, self.y2+3)]}
+        self.state_for_second = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0, 'points': [Point(self.x1+3, self.y1+3), Point(self.x2+3, self.y2+3)]}
 
         self.mouseline.sigRegionChangeFinished.disconnect(self.send_moved_data)
         self.mouseline.setState(state)
-        self.second_mouseline.setState(state_for_second)
+        self.second_mouseline.setState(self.state_for_second)
         self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
 
         # self._plot_wdg.getPlotItem().clear()     let it be there
@@ -87,6 +91,19 @@ class Viewer(QMainWindow):
             self.flag_point = True
             self._data_model.moved_data_acquiring(self.updated_data)
             self.flag_point = False
+
+    def catch_up_movement(self):
+        c1 = self.points_data['pos'][0] + self.x1 + 3
+        c2 = self.points_data['pos'][1] + self.y1 + 3
+        c3 = self.points_data['pos'][0] + self.x2 + 3
+        c4 = self.points_data['pos'][1] + self.y2 + 3
+        self.state_for_second = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
+                                 'points': [Point(c1, c2), Point(c3, c4)]}
+
+        self.mouseline.sigRegionChangeFinished.disconnect(self.send_moved_data)
+        self.second_mouseline.setState(self.state_for_second)
+        self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
+
 
 
 if __name__ == '__main__':
