@@ -30,12 +30,14 @@ class Viewer(QMainWindow):
         self._button.clicked.connect(self.send_moved_data)
         self._plot_wdg.setRange(xRange=[-10, 10], yRange=[-10, 10])
 
-        self.mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False)
-        self.second_mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False)
+        self.mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False, pen=(1, 9))
+        self.second_mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False, pen=(2, 9))
 
         self._plot_wdg.addItem(self.mouseline)
         self._plot_wdg.addItem(self.second_mouseline)
         self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
+
+        self.second_mouseline.sigRegionChangeFinished.connect(self.bruh)
 
         # self.mouseline.sigRegionChangeFinished.connect(self.catch_up_movement)
 
@@ -44,6 +46,10 @@ class Viewer(QMainWindow):
         self.updated_data = None
         self.flag_point = False
         self.state_for_second = None
+        self.temp = [0, 0] #{'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
+                                 #'points': [Point(0, 0), Point(0, 0)]}
+        self.points_data_second = None
+        self.moved_data_second = None
 
     def set_data_model(self, dm: DataModel):
         self._data_model = dm
@@ -64,9 +70,11 @@ class Viewer(QMainWindow):
         self.x2 = self.crdn[1]
         self.y1 = self.crdn[2]
         self.y2 = self.crdn[3]
-        self.xdata = self.crdn[4]
-        state = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0, 'points': [Point(self.x1, self.y1), Point(self.x2, self.y2)]}
-        self.state_for_second = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0, 'points': [Point(self.x1+3, self.y1+3), Point(self.x2+3, self.y2+3)]}
+        # self.xdata = self.crdn[4] data for sin graph
+        state = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
+                 'points': [Point(self.x1, self.y1), Point(self.x2, self.y2)]}
+        self.state_for_second = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
+                                 'points': [Point(self.x1+3, self.y1+3), Point(self.x2+3, self.y2+3)]}
 
         self.mouseline.sigRegionChangeFinished.disconnect(self.send_moved_data)
         self.mouseline.setState(state)
@@ -74,7 +82,7 @@ class Viewer(QMainWindow):
         self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
 
         # self._plot_wdg.getPlotItem().clear()     let it be there
-        self._plot_wdg.getPlotItem().plot().setData(x=self.xdata, y=np.sin(self.xdata) * 2)
+        # self._plot_wdg.getPlotItem().plot().setData(x=self.xdata, y=np.sin(self.xdata) * 2) old sin graph
 
     # def send_data(self):
     #     self._data_model.acquiring_data(self.crdn)
@@ -82,28 +90,44 @@ class Viewer(QMainWindow):
     def send_moved_data(self):
         if not self.flag_point:
             self.points_data = self.mouseline.getState()  # here, we get an array, which has multiple elements,
-            p1 = self.points_data['pos'][0] + self.x1     # but only pos is needed
-            p2 = self.points_data['pos'][1] + self.y1
-            p3 = self.points_data['pos'][0] + self.x2
-            p4 = self.points_data['pos'][1] + self.y2
+            self.p1 = self.points_data['pos'][0] + self.x1     # but only pos is needed
+            self.p2 = self.points_data['pos'][1] + self.y1
+            self.p3 = self.points_data['pos'][0] + self.x2
+            self.p4 = self.points_data['pos'][1] + self.y2
+            self.old_temp = self.second_mouseline.getState()
 
-            self.updated_data = [p1, p2, p3, p4]
+            self.updated_data = [self.p1, self.p2, self.p3, self.p4]
             self.flag_point = True
             self._data_model.moved_data_acquiring(self.updated_data)
             self.flag_point = False
 
     def catch_up_movement(self):
-        c1 = self.points_data['pos'][0] + self.x1 + 3
-        c2 = self.points_data['pos'][1] + self.y1 + 3
-        c3 = self.points_data['pos'][0] + self.x2 + 3
-        c4 = self.points_data['pos'][1] + self.y2 + 3
+        # self.points_data_second = self.second_mouseline.getState()
+        self.points_data_second = self.moved_data_second
+        # print(self.second_mouseline.getState())
+        # print(self.points_data_second['points'])
+        # print(self.points_data_second['points'][1][1])
+
+        c1 = self.points_data_second['pos'][0] + self.points_data['pos'][0] + self.x1 + 3 #- self.temp[0]
+        c2 = self.points_data_second['pos'][1] + self.points_data['pos'][1] + self.y1 + 3 #- self.temp[1]
+        c3 = self.points_data_second['pos'][0] + self.points_data['pos'][0] + self.x2 + 3 #- self.temp[0]
+        c4 = self.points_data_second['pos'][1] + self.points_data['pos'][1] + self.y2 + 3 #- self.temp[1]
+        self.temp[0] = self.points_data['pos'][0]
+        self.temp[1] = self.points_data['pos'][1]
+
         self.state_for_second = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
                                  'points': [Point(c1, c2), Point(c3, c4)]}
 
-        self.mouseline.sigRegionChangeFinished.disconnect(self.send_moved_data)
+        self.second_mouseline.sigRegionChangeFinished.disconnect(self.bruh)
         self.second_mouseline.setState(self.state_for_second)
-        self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
+        self.second_mouseline.sigRegionChangeFinished.connect(self.bruh)
 
+    def position_for_second(self):
+        data = self.second_mouseline.getState()
+        return data
+
+    def bruh(self):
+        self.moved_data_second = self.position_for_second()
 
 
 if __name__ == '__main__':
