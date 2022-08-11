@@ -37,7 +37,7 @@ class Viewer(QMainWindow):
         self._plot_wdg.addItem(self.second_mouseline)
         self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
 
-        self.second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph)
+        # self.second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph)
 
         # self.mouseline.sigRegionChangeFinished.connect(self.catch_up_movement)
 
@@ -46,8 +46,7 @@ class Viewer(QMainWindow):
         self.updated_data = None
         self.flag_point = False
         self.state_for_second = None
-        self.temp = [0, 0] #{'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
-                                 #'points': [Point(0, 0), Point(0, 0)]}
+        self.temp = {'pos': Point(0, 0)}
         self.points_data_second = None
         self.moved_data_second = None
 
@@ -57,6 +56,7 @@ class Viewer(QMainWindow):
         self._data_model.coordinate_changed.connect(self._on_model_points_changed)
         self._data_model.coordinate_moved.connect(self.send_moved_data)  # new line
         self._data_model.coordinate_moved.connect(self.catch_up_movement)  # newer line
+        self.second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph)
 
         self._data_model.generate_new_coordinates()
 
@@ -76,10 +76,12 @@ class Viewer(QMainWindow):
         self.state_for_second = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
                                  'points': [Point(self.x1+3, self.y1+3), Point(self.x2+3, self.y2+3)]}
 
+        self.second_mouseline.sigRegionChangeFinished.disconnect(self.moved_second_graph)
         self.mouseline.sigRegionChangeFinished.disconnect(self.send_moved_data)
         self.mouseline.setState(state)
         self.second_mouseline.setState(self.state_for_second)
         self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
+        self.second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph)
 
         # self._plot_wdg.getPlotItem().clear()     let it be there
         # self._plot_wdg.getPlotItem().plot().setData(x=self.xdata, y=np.sin(self.xdata) * 2) old sin graph
@@ -94,7 +96,6 @@ class Viewer(QMainWindow):
             self.p2 = self.points_data['pos'][1] + self.y1
             self.p3 = self.points_data['pos'][0] + self.x2
             self.p4 = self.points_data['pos'][1] + self.y2
-            self.old_temp = self.second_mouseline.getState()
 
             self.updated_data = [self.p1, self.p2, self.p3, self.p4]
             self.flag_point = True
@@ -102,18 +103,38 @@ class Viewer(QMainWindow):
             self.flag_point = False
 
     def catch_up_movement(self):
-        # self.points_data_second = self.second_mouseline.getState()
-        self.points_data_second = self.moved_data_second
+
+        self.points_data_second = self.second_mouseline.getState()
+        if not ((self.points_data_second['pos'][0] == 0 and self.points_data_second['pos'][1] == 0) or (
+                self.points_data_second['pos'][0] == self.temp['pos'][0] and self.points_data_second['pos'][1] == self.temp['pos'][1])):
+            c1 = self.points_data_second['pos'][0] + self.points_data['pos'][0] + self.x1 + 3
+            c2 = self.points_data_second['pos'][1] + self.points_data['pos'][1] + self.y1 + 3
+            c3 = self.points_data_second['pos'][0] + self.points_data['pos'][0] + self.x2 + 3
+            c4 = self.points_data_second['pos'][1] + self.points_data['pos'][1] + self.y2 + 3
+            self.temp = self.points_data_second
+        else:
+            c1 = self.temp['pos'][0] + self.points_data['pos'][0] + self.x1 + 3
+            c2 = self.temp['pos'][1] + self.points_data['pos'][1] + self.y1 + 3
+            c3 = self.temp['pos'][0] + self.points_data['pos'][0] + self.x2 + 3
+            c4 = self.temp['pos'][1] + self.points_data['pos'][1] + self.y2 + 3
+        # self.temp = self.points_data_second
+
+        # if not self.temp == self.moved_data_second:
+        #     self.points_data_second = self.moved_data_second
+        #     self.temp = self.moved_data_second
+        # else:
+        #     self.points_data_second = self.second_mouseline.getState()
+        print(self.points_data_second)
         # print(self.second_mouseline.getState())
         # print(self.points_data_second['points'])
         # print(self.points_data_second['points'][1][1])
 
-        c1 = self.points_data_second['pos'][0] + self.points_data['pos'][0] + self.x1 + 3 #- self.temp[0]
-        c2 = self.points_data_second['pos'][1] + self.points_data['pos'][1] + self.y1 + 3 #- self.temp[1]
-        c3 = self.points_data_second['pos'][0] + self.points_data['pos'][0] + self.x2 + 3 #- self.temp[0]
-        c4 = self.points_data_second['pos'][1] + self.points_data['pos'][1] + self.y2 + 3 #- self.temp[1]
-        self.temp[0] = self.points_data['pos'][0]
-        self.temp[1] = self.points_data['pos'][1]
+        # c1 = self.points_data_second['pos'][0] + self.points_data['pos'][0] + self.x1 + 3 #- self.temp[0]
+        # c2 = self.points_data_second['pos'][1] + self.points_data['pos'][1] + self.y1 + 3 #- self.temp[1]
+        # c3 = self.points_data_second['pos'][0] + self.points_data['pos'][0] + self.x2 + 3 #- self.temp[0]
+        # c4 = self.points_data_second['pos'][1] + self.points_data['pos'][1] + self.y2 + 3 #- self.temp[1]
+        # self.temp[0] = self.points_data['pos'][0]
+        # self.temp[1] = self.points_data['pos'][1]
 
         self.state_for_second = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
                                  'points': [Point(c1, c2), Point(c3, c4)]}
@@ -124,6 +145,7 @@ class Viewer(QMainWindow):
 
     def position_for_second(self):
         data = self.second_mouseline.getState()
+        print(data)
         return data
 
     def moved_second_graph(self):
