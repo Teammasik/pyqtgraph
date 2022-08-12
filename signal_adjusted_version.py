@@ -35,7 +35,7 @@ class Viewer(QMainWindow):
 
         self._plot_wdg.addItem(self.mouseline)
         self._plot_wdg.addItem(self.second_mouseline)
-        self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
+        self.mouseline.sigRegionChanged.connect(self.send_moved_data)
 
         self.points_data = None
         self.updated_data = None
@@ -71,10 +71,10 @@ class Viewer(QMainWindow):
                                  'points': [Point(self.x1+3, self.y1+3), Point(self.x2+3, self.y2+3)]}
 
         self.second_mouseline.sigRegionChangeFinished.disconnect(self.moved_second_graph)
-        self.mouseline.sigRegionChangeFinished.disconnect(self.send_moved_data)
+        # self.mouseline.sigRegionChangeFinished.disconnect(self.send_moved_data)
         self.mouseline.setState(state)
         self.second_mouseline.setState(self.state_for_second)
-        self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
+        # self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
         self.second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph)
 
         # self._plot_wdg.getPlotItem().clear()     let it be there
@@ -112,9 +112,9 @@ class Viewer(QMainWindow):
 
         self.state_for_second = {'pos': Point(p1, p2), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
                                  'points': [Point(c1, c2), Point(c3, c4)]}
-        self.second_mouseline.sigRegionChangeFinished.disconnect(self.moved_second_graph)
+        # self.second_mouseline.sigRegionChangeFinished.disconnect(self.moved_second_graph)
         self.second_mouseline.setState(self.state_for_second)
-        self.second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph)
+        # self.second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph)
 
     def position_for_second(self):
         data = self.second_mouseline.getState()
