@@ -10,13 +10,10 @@ class DataModel(QObject):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.x1, self.x2, self.y1, self.y2 = None, None, None, None
-        self.x = []
-        for i in range(-300, 300, 6):  self.x.append(i / 100)
-
         self.moved_data = None
 
     def coordinates(self):
-        return [self.x1, self.x2, self.y1, self.y2, self.x]
+        return [self.x1, self.x2, self.y1, self.y2]
 
     def generate_new_coordinates(self):
         self.x1 = randint(-10, 10)
