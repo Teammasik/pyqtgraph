@@ -25,9 +25,6 @@ class DataModel(QObject):
         self.y2 = randint(-10, 10)
         self.coordinate_changed.emit()
 
-    # def acquiring_data(self, crdn):
-    #     print("", crdn[0], "is x1\n", crdn[1], "is y1\n", crdn[2], "is x2\n", crdn[3], "is y2\n\n")
-
     def moved_data_acquiring(self, sent_inform):
         self.moved_data = sent_inform
         print(sent_inform)
