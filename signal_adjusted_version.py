@@ -13,12 +13,17 @@ class Viewer(QMainWindow):
         super().__init__(*args, **kwargs)
 
         self._central_widget = QWidget()
-        self._button = QPushButton('Push me')
+        self._button = QPushButton('Push me to enter the coordinates')
         self._button.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-        self._plot_wdg = pg.PlotWidget(enableMenu=False, title="TEST")
+
+        self._button1 = QPushButton('Push me to put the color')
+        self._button1.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+
+        self._plot_wdg = pg.PlotWidget(enableMenu=False, title="Moving lines")
 
         layout = QVBoxLayout()
         layout.addWidget(self._button)
+        layout.addWidget(self._button1)
         layout.addWidget(self._plot_wdg)
         self._central_widget.setLayout(layout)
         self.setCentralWidget(self._central_widget)
@@ -26,13 +31,14 @@ class Viewer(QMainWindow):
 
         self._data_model = None
 
-        self._button.clicked.connect(self._on_button_clicked)
+        self._button.clicked.connect(self.set_pos)
         self._button.clicked.connect(self.send_moved_data)
+        self._button1.clicked.connect(self.set_color)
         self._plot_wdg.setRange(xRange=[-10, 10], yRange=[-10, 10])
 
-        self.mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False, pen=(1, 9))
-        self.second_mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False, pen=(2, 9))
-
+        self.mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False, pen=(1, 1))
+        self.second_mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False, pen=(2, 3))
+        # print(self.mouseline.getHandles())
         self._plot_wdg.addItem(self.mouseline)
         self._plot_wdg.addItem(self.second_mouseline)
         self.mouseline.sigRegionChanged.connect(self.send_moved_data)
@@ -43,6 +49,7 @@ class Viewer(QMainWindow):
         self.state_for_second = None
         self.points_data_second = None
         self.moved_data_second = None
+        self.pos = [0, 0]
 
     def set_data_model(self, dm: DataModel):
         self._data_model = dm
@@ -56,6 +63,7 @@ class Viewer(QMainWindow):
 
     def _on_button_clicked(self):
         self._data_model.generate_new_coordinates()
+        self.k = int(input())
 
     def _on_model_points_changed(self):
 
@@ -64,6 +72,11 @@ class Viewer(QMainWindow):
         self.x2 = self.crdn[1]
         self.y1 = self.crdn[2]
         self.y2 = self.crdn[3]
+        if self.pos != [0, 0]:
+            self.x1 = int(self.pos[0])
+            self.y1 = int(self.pos[1])
+            self.x2 = int(self.pos[2])
+            self.y2 = int(self.pos[3])
 
         state = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
                  'points': [Point(self.x1, self.y1), Point(self.x2, self.y2)]}
@@ -76,9 +89,6 @@ class Viewer(QMainWindow):
         self.second_mouseline.setState(self.state_for_second)
         # self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
         self.second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph)
-
-        # self._plot_wdg.getPlotItem().clear()     let it be there
-        # self._plot_wdg.getPlotItem().plot().setData(x=self.xdata, y=np.sin(self.xdata) * 2) old sin graph
 
     def send_moved_data(self):
         if not self.flag_point:
@@ -122,6 +132,18 @@ class Viewer(QMainWindow):
 
     def moved_second_graph(self):
         self.moved_data_second = self.position_for_second()
+
+    def set_color(self):
+        print('available colors: yellow, red, orange, green, blue, dark blue')
+        self.color_1 = input('enter color for the 1st line ')
+        self.color_2 = input('enter color for the 2st line ')
+
+    def set_pos(self):
+        self.pos[0] = input('Enter a position of 1st dot, use "," for splitting x and y - ')
+        self.pos[1] = input('Enter a position of 2nd dot - ')
+        self.pos = self.pos[0].split(',') + self.pos[1].split(',')
+        print(self.pos)
+        self._on_model_points_changed()
 
 
 if __name__ == '__main__':
