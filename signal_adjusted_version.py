@@ -36,9 +36,8 @@ class Viewer(QMainWindow):
         self._button1.clicked.connect(self.set_color)
         self._plot_wdg.setRange(xRange=[-10, 10], yRange=[-10, 10])
 
-        self.mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False, pen=(1, 1))
-        self.second_mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False, pen=(2, 3))
-        # print(self.mouseline.getHandles())
+        self.mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False, pen=(1, 10))
+        self.second_mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False, pen=(2, 4))
         self._plot_wdg.addItem(self.mouseline)
         self._plot_wdg.addItem(self.second_mouseline)
         self.mouseline.sigRegionChanged.connect(self.send_moved_data)
@@ -50,6 +49,10 @@ class Viewer(QMainWindow):
         self.points_data_second = None
         self.moved_data_second = None
         self.pos = [0, 0]
+        self.colors = {'yellow': (2, 10), 'red': (1, 1), 'orange': (1, 10), 'green': (1, 3), 'blue': (2, 4),
+                       'dark blue': (2, 3)}
+        self.color_1 = None
+        self.color_2 = None
 
     def set_data_model(self, dm: DataModel):
         self._data_model = dm
@@ -61,9 +64,9 @@ class Viewer(QMainWindow):
 
         self._data_model.generate_new_coordinates()
 
-    def _on_button_clicked(self):
-        self._data_model.generate_new_coordinates()
-        self.k = int(input())
+    # def _on_button_clicked(self):
+    #     self._data_model.generate_new_coordinates() let it be commented for now
+    #     self.k = int(input())
 
     def _on_model_points_changed(self):
 
@@ -116,15 +119,12 @@ class Viewer(QMainWindow):
         c4 = self.points_data['pos'][1] + self.y2 + 3
 
         print(self.points_data_second, '\n')
-        # print(self.second_mouseline.getState())
-        # print(self.points_data_second['points'])
-        # print(self.points_data_second['points'][1][1])
 
         self.state_for_second = {'pos': Point(p1, p2), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
                                  'points': [Point(c1, c2), Point(c3, c4)]}
-        # self.second_mouseline.sigRegionChangeFinished.disconnect(self.moved_second_graph)
+        # self.second_mouseline.sigRegionChangeFinished.disconnect(self.moved_second_graph) let it be there
         self.second_mouseline.setState(self.state_for_second)
-        # self.second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph)
+        # self.second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph) let it be there
 
     def position_for_second(self):
         data = self.second_mouseline.getState()
@@ -137,6 +137,8 @@ class Viewer(QMainWindow):
         print('available colors: yellow, red, orange, green, blue, dark blue')
         self.color_1 = input('enter color for the 1st line ')
         self.color_2 = input('enter color for the 2st line ')
+        self.mouseline.setPen(self.colors[self.color_1])
+        self.second_mouseline.setPen(self.colors[self.color_2])
 
     def set_pos(self):
         self.pos[0] = input('Enter a position of 1st dot, use "," for splitting x and y - ')
