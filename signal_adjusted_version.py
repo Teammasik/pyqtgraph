@@ -81,16 +81,28 @@ class Viewer(QMainWindow):
             self.x2 = int(self.pos[2])
             self.y2 = int(self.pos[3])
 
+        self.drawing_lines()
+        # state = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
+        #          'points': [Point(self.x1, self.y1), Point(self.x2, self.y2)]}
+        # self.state_for_second = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
+        #                          'points': [Point(self.x1+3, self.y1+3), Point(self.x2+3, self.y2+3)]}
+        #
+        # self.second_mouseline.sigRegionChangeFinished.disconnect(self.moved_second_graph)
+        # # self.mouseline.sigRegionChangeFinished.disconnect(self.send_moved_data)
+        # self.mouseline.setState(state)
+        # self.second_mouseline.setState(self.state_for_second)
+        # # self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
+        # self.second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph)
+
+    def drawing_lines(self):
         state = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
                  'points': [Point(self.x1, self.y1), Point(self.x2, self.y2)]}
         self.state_for_second = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
-                                 'points': [Point(self.x1+3, self.y1+3), Point(self.x2+3, self.y2+3)]}
+                                 'points': [Point(self.x1 + 3, self.y1 + 3), Point(self.x2 + 3, self.y2 + 3)]}
 
         self.second_mouseline.sigRegionChangeFinished.disconnect(self.moved_second_graph)
-        # self.mouseline.sigRegionChangeFinished.disconnect(self.send_moved_data)
         self.mouseline.setState(state)
         self.second_mouseline.setState(self.state_for_second)
-        # self.mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
         self.second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph)
 
     def send_moved_data(self):
