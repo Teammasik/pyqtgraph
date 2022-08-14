@@ -53,6 +53,7 @@ class Viewer(QMainWindow):
                        'dark blue': (2, 3)}
         self.color_1 = None
         self.color_2 = None
+        self.color_palette = ['yellow', 'red', 'orange', 'green', 'blue', 'dark blue']
 
     def set_data_model(self, dm: DataModel):
         self._data_model = dm
@@ -63,10 +64,6 @@ class Viewer(QMainWindow):
         self.second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph)
 
         self._data_model.generate_new_coordinates()
-
-    # def _on_button_clicked(self):
-    #     self._data_model.generate_new_coordinates() let it be commented for now
-    #     self.k = int(input())
 
     def _on_model_points_changed(self):
 
@@ -130,7 +127,7 @@ class Viewer(QMainWindow):
         c3 = self.points_data['pos'][0] + self.x2 + 3
         c4 = self.points_data['pos'][1] + self.y2 + 3
 
-        print(self.points_data_second, '\n')
+        # print(self.points_data_second, '\n')  off
 
         self.state_for_second = {'pos': Point(p1, p2), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
                                  'points': [Point(c1, c2), Point(c3, c4)]}
@@ -146,18 +143,18 @@ class Viewer(QMainWindow):
         self.moved_data_second = self.position_for_second()
 
     def set_color(self):
-        print('available colors: yellow, red, orange, green, blue, dark blue')
-        self.color_1 = input('enter color for the 1st line ')
-        self.color_2 = input('enter color for the 2st line ')
-        self.mouseline.setPen(self.colors[self.color_1])
-        self.second_mouseline.setPen(self.colors[self.color_2])
+        color_1, color_2 = self._data_model.set_color()
+        if color_1 and color_2 in self.color_palette:
+            self.mouseline.setPen(self.colors[color_1])
+            self.second_mouseline.setPen(self.colors[color_2])
+        else:
+            print("wrong color or you've made a typo, try again")
 
     def set_pos(self):
-        self.pos[0] = input('Enter a position of 1st dot, use "," for splitting x and y - ')
-        self.pos[1] = input('Enter a position of 2nd dot - ')
-        self.pos = self.pos[0].split(',') + self.pos[1].split(',')
-        print(self.pos)
-        self._on_model_points_changed()
+        self.pos = self._data_model.set_pos()
+        # print(self.pos)  off
+        if self.pos is not None:
+            self._on_model_points_changed()
 
 
 if __name__ == '__main__':
