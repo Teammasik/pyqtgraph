@@ -9,22 +9,22 @@ class DataModel(QObject):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.x1, self.x2, self.y1, self.y2 = None, None, None, None
-        self.moved_data = None
-        self.pos = ["w", "w"]
+        self._x1_d, self._x2_d, self._y1_d, self._y2_d = None, None, None, None
+        # self._moved_data = None
+        self._pos_data = ["w", "w"]
 
     def coordinates(self):
-        return [self.x1, self.x2, self.y1, self.y2]
+        return [self._x1_d, self._x2_d, self._y1_d, self._y2_d]
 
     def generate_new_coordinates(self):
-        self.x1 = randint(-10, 10)
-        self.x2 = randint(-10, 10)
-        self.y1 = randint(-10, 10)
-        self.y2 = randint(-10, 10)
+        self._x1_d = 1   # randint(-10, 10)
+        self._x2_d = 10  # randint(-10, 10)
+        self._y1_d = 1   # randint(-10, 10)
+        self._y2_d = 2   # randint(-10, 10)
         self.coordinate_changed.emit()
 
     def moved_data_acquiring(self, sent_inform):
-        self.moved_data = sent_inform
+        # self._moved_data = sent_inform off
         # print(sent_inform)  off
         self.coordinate_moved.emit()
 
@@ -35,11 +35,11 @@ class DataModel(QObject):
         return color_1, color_2
 
     def set_pos(self):
-        self.pos[0] = input('Enter a position of 1st dot, then press enter, example: 1,1\n ')
-        self.pos[1] = input('Enter a position of 2nd dot - ')
-        if self.pos[0].count(',') == 1 and self.pos[1].count(',') == 1:
-            self.pos = self.pos[0].split(',') + self.pos[1].split(',')
-            return self.pos
+        self._pos_data[0] = input('Enter a position of 1st dot, then press enter, example: 1,1\n type: ')
+        self._pos_data[1] = input('Enter a position of 2nd dot \n type: ')
+        if self._pos_data[0].count(',') == 1 and self._pos_data[1].count(',') == 1:
+            self._pos_data = self._pos_data[0].split(',') + self._pos_data[1].split(',')
+            return self._pos_data
         else:
             print("wrong coordinates! try again")
 
