@@ -1,4 +1,5 @@
 import sys
+
 import pyqtgraph as pg
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QVBoxLayout, QSizePolicy
@@ -35,13 +36,14 @@ class Viewer(QMainWindow):
         self._button1.clicked.connect(self.set_color)
         self._plot_wdg.setRange(xRange=[-10, 10], yRange=[-10, 10])
 
-        self._mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False, pen=(1, 10))
-        # self._mouseline.addRotateHandle([1, 1], [0, 0], name='1st')
-        # self._mouseline.addRotateHandle([10, 2], [0, 0], name='2nd')
-        # print(self._mouseline.handles)
-        self._second_mouseline = pg.LineSegmentROI([[0, 0], [1, 1]], movable=True, rotatable=False, pen=(2, 4))
-        # self._second_mouseline.addRotateHandle([4, 4], [0, 0])
-        # self._second_mouseline.addRotateHandle([13, 5], [0, 0])
+        self._mouseline = pg.LineSegmentROI([[1, 1], [10, 2]], movable=True, rotatable=False, pen=(1, 10))
+        self._mouseline.addRotateHandle([1, 1], [0, 0])
+        self._mouseline.addRotateHandle([10, 2], [0, 0])
+        self._second_mouseline = pg.LineSegmentROI([[4, 4], [13, 5]], movable=True, rotatable=False, pen=(2, 4))
+
+        self._second_mouseline.addRotateHandle([4, 4], [0, 0])
+        self._second_mouseline.addRotateHandle([13, 5], [0, 0])
+
         self._plot_wdg.addItem(self._mouseline)
         self._plot_wdg.addItem(self._second_mouseline)
         self._mouseline.sigRegionChanged.connect(self.send_moved_data)
@@ -53,6 +55,7 @@ class Viewer(QMainWindow):
         self._points_data_second = None
         self._moved_data_second = None
         self._pos = [0, 0]
+        self._p1, self._p2, self._c1, self._c2, self._c3, self._c4 = None, None, None, None, None, None
         self._colors = {'yellow': (2, 10), 'red': (1, 1), 'orange': (1, 10), 'green': (1, 3), 'blue': (2, 4),
                         'dark blue': (2, 3)}
         self._color_palette = ['yellow', 'red', 'orange', 'green', 'blue', 'dark blue']
@@ -81,7 +84,10 @@ class Viewer(QMainWindow):
             self._y1 = crdn[2]
             self._y2 = crdn[3]
 
-        self.drawing_lines()
+        # self._mouseline.handles[0]['pos'] = Point(self._x1, self._y1)
+        # self._mouseline.handles[1]['pos'] = Point(self._x2, self._y2)
+
+        self.drawing_lines(True)
         # state = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
         #          'points': [Point(self._x1, self._y1), Point(self._x2, self._y2)]}
         # self._state_for_second = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
@@ -94,16 +100,28 @@ class Viewer(QMainWindow):
         # # self._mouseline.sigRegionChangeFinished.connect(self.send_moved_data)
         # self._second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph)
 
-    def drawing_lines(self):
-        state = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
-                 'points': [Point(self._x1, self._y1), Point(self._x2, self._y2)]}
-        self._state_for_second = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
-                                  'points': [Point(self._x1 + 3, self._y1 + 3), Point(self._x2 + 3, self._y2 + 3)]}
+    def drawing_lines(self, statement):
+        if statement:
+            state = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
+                     'points': [Point(self._x1, self._y1), Point(self._x2, self._y2)]}
+            self._state_for_second = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
+                                      'points': [Point(self._x1 + 3, self._y1 + 3), Point(self._x2 + 3, self._y2 + 3)]}
 
-        # self._second_mouseline.sigRegionChangeFinished.disconnect(self.moved_second_graph) let it be there
-        self._mouseline.setState(state)
-        self._second_mouseline.setState(self._state_for_second)
-        # self._second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph) same as 103 line
+            self._mouseline.handles[2]['pos'] = Point(self._x1, self._y1)
+            self._mouseline.handles[3]['pos'] = Point(self._x2, self._y2)
+            self._second_mouseline.handles[2]['pos'] = Point(self._x1 + 3, self._y1 + 3)
+            self._second_mouseline.handles[3]['pos'] = Point(self._x2 + 3, self._y2 + 3)
+
+            # self._second_mouseline.sigRegionChangeFinished.disconnect(self.moved_second_graph) let it be there
+            self._mouseline.setState(state)
+            self._second_mouseline.setState(self._state_for_second)
+            # self._second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph) same as 103 line
+        else:
+            self._state_for_second = {'pos': Point(self._p1, self._p2), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
+                                      'points': [Point(self._c1, self._c2), Point(self._c3, self._c4)]}
+            self._second_mouseline.setState(self._state_for_second)
+            self._second_mouseline.handles[2]['pos'] = Point(self._c1, self._c2)
+            self._second_mouseline.handles[3]['pos'] = Point(self._c3, self._c4)
 
     def send_moved_data(self):
         if not self._flag_point:
@@ -122,21 +140,24 @@ class Viewer(QMainWindow):
 
         self._points_data_second = self._second_mouseline.getState()
 
-        p1 = self._points_data_second['pos'][0]  # p1/p2 variables for translocation
-        p2 = self._points_data_second['pos'][1]
+        self._p1 = self._points_data_second['pos'][0]  # self._p1/self._p2 variables for translocation
+        self._p2 = self._points_data_second['pos'][1]
 
-        c1 = self._points_data['pos'][0] + self._x1 + 3  # c - variables for coordinates
-        c2 = self._points_data['pos'][1] + self._y1 + 3
-        c3 = self._points_data['pos'][0] + self._x2 + 3
-        c4 = self._points_data['pos'][1] + self._y2 + 3
+        self._c1 = self._points_data['pos'][0] + self._x1 + 3  # c - variables for coordinates
+        self._c2 = self._points_data['pos'][1] + self._y1 + 3
+        self._c3 = self._points_data['pos'][0] + self._x2 + 3
+        self._c4 = self._points_data['pos'][1] + self._y2 + 3
 
         # print(self._points_data_second, '\n')  off
+        self.drawing_lines(False)
 
-        self._state_for_second = {'pos': Point(p1, p2), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
-                                  'points': [Point(c1, c2), Point(c3, c4)]}
-        # self._second_mouseline.sigRegionChangeFinished.disconnect(self.moved_second_graph) let it be there
-        self._second_mouseline.setState(self._state_for_second)
-        # self._second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph) let it be there
+        # self._state_for_second = {'pos': Point(self._p1, self._p2), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
+        #                           'points': [Point(self._c1, self._c2), Point(self._c3, self._c4)]}
+        # # self._second_mouseline.sigRegionChangeFinished.disconnect(self.moved_second_graph) let it be there
+        # self._second_mouseline.setState(self._state_for_second)
+        # self._second_mouseline.handles[2]['pos'] = Point(self._c1, self._c2)
+        # self._second_mouseline.handles[3]['pos'] = Point(self._c3, self._c4)
+        # # self._second_mouseline.sigRegionChangeFinished.connect(self.moved_second_graph) let it be there
 
     def position_for_second(self):
         data = self._second_mouseline.getState()

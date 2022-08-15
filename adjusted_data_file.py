@@ -30,8 +30,8 @@ class DataModel(QObject):
 
     def set_color(self):
         print('available colors: yellow, red, orange, green, blue, dark blue')
-        color_1 = input('enter color for the 1st line ')
-        color_2 = input('enter color for the 2st line ')
+        color_1 = input('enter color for the 1st line\n type: ')
+        color_2 = input('enter color for the 2st line\n type: ')
         return color_1, color_2
 
     def set_pos(self):
