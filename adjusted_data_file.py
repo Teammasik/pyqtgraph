@@ -1,4 +1,3 @@
-import numpy as np
 from PyQt5.QtCore import pyqtSignal, QObject
 from random import randint
 
@@ -10,22 +9,19 @@ class DataModel(QObject):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._x1_d, self._x2_d, self._y1_d, self._y2_d = None, None, None, None
-        # self._moved_data = None
         self._pos_data = ["w", "w"]
 
     def coordinates(self):
         return [self._x1_d, self._x2_d, self._y1_d, self._y2_d]
 
     def generate_new_coordinates(self):
-        self._x1_d = 1   # randint(-10, 10)
-        self._x2_d = 10  # randint(-10, 10)
-        self._y1_d = 1   # randint(-10, 10)
-        self._y2_d = 2   # randint(-10, 10)
+        self._x1_d = randint(-10, 10)
+        self._x2_d = randint(-10, 10)
+        self._y1_d = randint(-10, 10)
+        self._y2_d = randint(-10, 10)
         self.coordinate_changed.emit()
 
     def moved_data_acquiring(self, sent_inform):
-        # self._moved_data = sent_inform off
-        # print(sent_inform)  off
         self.coordinate_moved.emit()
 
     def set_color(self):
