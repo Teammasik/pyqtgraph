@@ -1,6 +1,8 @@
 import sys
 
 import pyqtgraph as pg
+from pyqtgraph import ROI
+from pyqtgraph import LineSegmentROI
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QVBoxLayout, QSizePolicy
 from pyqtgraph import Point
@@ -37,12 +39,14 @@ class Viewer(QMainWindow):
         self._plot_wdg.setRange(xRange=[-10, 10], yRange=[-10, 10])
 
         self._mouseline = pg.LineSegmentROI([[1, 1], [10, 2]], movable=True, rotatable=False, pen=(1, 10))
-        self._mouseline.addRotateHandle([1, 1], [0, 0])
-        self._mouseline.addRotateHandle([10, 2], [0, 0])
         self._second_mouseline = pg.LineSegmentROI([[4, 4], [13, 5]], movable=True, rotatable=False, pen=(2, 4))
 
-        self._second_mouseline.addRotateHandle([4, 4], [0, 0])
-        self._second_mouseline.addRotateHandle([13, 5], [0, 0])
+        handles = self._mouseline.handles
+        for handle in handles:
+            handle['item'].disconnectROI(self._mouseline)
+        handles = self._second_mouseline.handles
+        for handle in handles:
+            handle['item'].disconnectROI(self._second_mouseline)
 
         self._plot_wdg.addItem(self._mouseline)
         self._plot_wdg.addItem(self._second_mouseline)
@@ -59,6 +63,23 @@ class Viewer(QMainWindow):
         self._colors = {'yellow': (2, 10), 'red': (1, 1), 'orange': (1, 10), 'green': (1, 3), 'blue': (2, 4),
                         'dark blue': (2, 3)}
         self._color_palette = ['yellow', 'red', 'orange', 'green', 'blue', 'dark blue']
+
+    def getState(self):
+        return
+
+    def stateCopy(self):
+        return
+
+    def saveState(self):
+        return
+
+    def setState(self, state, update=True):
+        return
+
+    def setPos(self, pos, y=None, update=True, finish=True):
+        return
+
+
 
     def set_data_model(self, dm: DataModel):
         self._data_model = dm
@@ -107,10 +128,10 @@ class Viewer(QMainWindow):
             self._state_for_second = {'pos': Point(0.000000, 0.000000), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
                                       'points': [Point(self._x1 + 3, self._y1 + 3), Point(self._x2 + 3, self._y2 + 3)]}
 
-            self._mouseline.handles[2]['pos'] = Point(self._x1, self._y1)
-            self._mouseline.handles[3]['pos'] = Point(self._x2, self._y2)
-            self._second_mouseline.handles[2]['pos'] = Point(self._x1 + 3, self._y1 + 3)
-            self._second_mouseline.handles[3]['pos'] = Point(self._x2 + 3, self._y2 + 3)
+            # self._mouseline.handles[2]['pos'] = Point(self._x1, self._y1)
+            # self._mouseline.handles[3]['pos'] = Point(self._x2, self._y2)
+            # self._second_mouseline.handles[2]['pos'] = Point(self._x1 + 3, self._y1 + 3)
+            # self._second_mouseline.handles[3]['pos'] = Point(self._x2 + 3, self._y2 + 3)
 
             # self._second_mouseline.sigRegionChangeFinished.disconnect(self.moved_second_graph) let it be there
             self._mouseline.setState(state)
@@ -120,8 +141,8 @@ class Viewer(QMainWindow):
             self._state_for_second = {'pos': Point(self._p1, self._p2), 'size': Point(1.000000, 1.000000), 'angle': 0.0,
                                       'points': [Point(self._c1, self._c2), Point(self._c3, self._c4)]}
             self._second_mouseline.setState(self._state_for_second)
-            self._second_mouseline.handles[2]['pos'] = Point(self._c1, self._c2)
-            self._second_mouseline.handles[3]['pos'] = Point(self._c3, self._c4)
+            # self._second_mouseline.handles[2]['pos'] = Point(self._c1, self._c2)
+            # self._second_mouseline.handles[3]['pos'] = Point(self._c3, self._c4)
 
     def send_moved_data(self):
         if not self._flag_point:
@@ -183,7 +204,7 @@ class Viewer(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    view = Viewer()
+    view = Viewer(None)
     data_model = DataModel()
     view.set_data_model(data_model)
     view.show()
